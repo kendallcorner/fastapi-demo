@@ -1,0 +1,33 @@
+version: '3.9'
+
+networks:
+  default:
+    name: demo-fastapi
+
+services:
+
+  demo-db:
+    extends:
+      file: ./db/docker-compose.yml
+      service: demo-db
+
+  # demo-ui:
+  #   profiles: [build-ui]
+  #   extends:
+  #     file: ../demo-ui/docker-compose.yml
+  #     service: demo-ui
+
+  demo-api:
+    depends_on: [demo-db]
+    profiles: [build-api, build-ui]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # env_file:
+    #   - ./demo/.env
+    environment:
+      - DATABASE_URL="postgresql+psycopg2://postgres:postgres@demo-db:5432/postgres"
+    ports:
+      - "9000:80"
+    volumes:
+      - './backend:/app/backend/'
